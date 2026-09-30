@@ -53,7 +53,7 @@ npm run dist:win   # auf Windows
 ```
 
 Die Installer werden per GitHub Actions auf macOS- und Windows-Runnern gebaut
-(`ci/build.yml` – muss noch nach `.github/workflows/build.yml` verschoben werden, siehe unten), dort laufen vorher auch die E2E-Tests. Ein Tag
+(`.github/workflows/build.yml`), dort laufen vorher auch die E2E-Tests. Ein Tag
 `v*` hängt die Installer an ein GitHub-Release.
 
 ### Architektur
@@ -74,10 +74,3 @@ e2e/                 E2E-Tests inkl. lokalem Git-HTTP-Server
 Die Testdateien importieren `@playwright/test`; aufgelöst wird das über
 `NODE_PATH` auf die in der App mitgelieferte Playwright-Version. Browser
 landen im App-Datenverzeichnis (`ms-playwright`).
-
-### Build-Pipeline aktivieren
-
-Die Pipeline liegt unter `ci/build.yml`, weil der beim Anlegen verwendete
-Token keine Workflow-Dateien pushen durfte. Aktivieren: auf GitHub
-**Add file → Create new file**, Name `.github/workflows/build.yml`, Inhalt von
-`ci/build.yml` einfügen und committen (danach `ci/` löschen).
