@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; worker-src 'self' blob:" />
+  <title>Playwright Workbench</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header id="toolbar">
+    <div class="group">
+      <button id="btn-new-project" title="Neues Playwright-Projekt anlegen">Neues Projekt</button>
+      <button id="btn-open">Ordner öffnen</button>
+    </div>
+    <div class="group needs-root">
+      <button id="btn-run-all" class="primary" title="Alle Tests ausführen">▶ Alle Tests</button>
+      <button id="btn-run-file" title="Tests der geöffneten Datei ausführen">▶ Datei</button>
+      <button id="btn-run-test" title="Test an der Cursor-Position ausführen">▶ Test unter Cursor</button>
+      <button id="btn-stop" class="danger" disabled>■ Stopp</button>
+      <label class="check"><input type="checkbox" id="chk-headed" /> Browser sichtbar</label>
+    </div>
+    <div class="group needs-root">
+      <button id="btn-codegen" title="Klicks im Browser aufnehmen und als Test speichern">● Aufnehmen</button>
+      <button id="btn-report">Report öffnen</button>
+    </div>
+  </header>
+
+  <div id="layout">
+    <aside id="sidebar">
+      <section id="explorer">
+        <div class="section-title">
+          <span id="project-name">EXPLORER</span>
+          <span class="actions needs-root">
+            <button id="btn-new-file" class="icon" title="Neue Datei">＋</button>
+            <button id="btn-refresh" class="icon" title="Aktualisieren">⟳</button>
+          </span>
+        </div>
+        <div id="tree"></div>
+      </section>
+      <section id="git" class="needs-root">
+        <div class="section-title">
+          <span>GIT</span>
+          <span class="actions">
+            <button id="btn-git-refresh" class="icon" title="Status aktualisieren">⟳</button>
+            <button id="btn-git-settings" class="icon" title="Git-Einstellungen">⚙</button>
+          </span>
+        </div>
+        <div id="git-body"></div>
+      </section>
+    </aside>
+
+    <main id="main">
+      <div id="tabs"></div>
+      <div id="editor"></div>
+      <div id="welcome">
+        <h1>Playwright Workbench</h1>
+        <p>Playwright-Tests schreiben und ausführen – ohne Node.js, npm oder sonstige Installation.</p>
+        <div class="welcome-actions">
+          <button id="w-new" class="primary">Neues Projekt anlegen</button>
+          <button id="w-open">Vorhandenen Ordner öffnen</button>
+          <button id="w-clone">Git-Repository klonen</button>
+        </div>
+        <div id="not-pw-hint" hidden>
+          <p>Dieser Ordner enthält noch keine <code>playwright.config</code>.</p>
+          <button id="w-template">Playwright-Vorlage hinzufügen</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <section id="panel">
+    <div class="section-title">
+      <span>AUSGABE</span>
+      <span class="actions"><button id="btn-clear" class="icon" title="Ausgabe leeren">⌫</button></span>
+    </div>
+    <pre id="output"></pre>
+  </section>
+
+  <footer id="statusbar">
+    <span id="status-text">Bereit</span>
+    <span id="browser-status"></span>
+  </footer>
+
+  <dialog id="modal">
+    <form method="dialog" id="modal-form">
+      <h3 id="modal-title"></h3>
+      <div id="modal-fields"></div>
+      <div class="modal-actions">
+        <button value="cancel" formnovalidate>Abbrechen</button>
+        <button value="ok" class="primary" id="modal-ok">OK</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="../node_modules/monaco-editor/min/vs/loader.js"></script>
+  <script src="renderer.js"></script>
+</body>
+</html>

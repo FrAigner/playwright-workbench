@@ -1,0 +1,93 @@
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  display: grid;
+  grid-template-rows: auto 1fr 220px 24px;
+  background: #1e1e1e;
+  color: #ccc;
+  font: 13px -apple-system, "Segoe UI", system-ui, sans-serif;
+  overflow: hidden;
+}
+button {
+  background: #3a3d41; color: #eee; border: 1px solid #4a4d51; border-radius: 3px;
+  padding: 4px 10px; font: inherit; cursor: pointer;
+}
+button:hover:not(:disabled) { background: #45494e; }
+button:disabled { opacity: .45; cursor: default; }
+button.primary { background: #0e639c; border-color: #1177bb; }
+button.primary:hover:not(:disabled) { background: #1177bb; }
+button.danger { background: #8b2a2a; border-color: #a33; }
+button.icon { background: none; border: none; padding: 0 4px; font-size: 14px; color: #ccc; }
+input, textarea {
+  background: #3c3c3c; color: #eee; border: 1px solid #555; border-radius: 3px;
+  padding: 4px 6px; font: inherit; width: 100%;
+}
+body.no-root .needs-root { display: none !important; }
+
+#toolbar {
+  display: flex; gap: 16px; align-items: center; padding: 6px 10px;
+  background: #2d2d30; border-bottom: 1px solid #111;
+}
+#toolbar .group { display: flex; gap: 6px; align-items: center; }
+.check { display: flex; gap: 4px; align-items: center; white-space: nowrap; }
+.check input { width: auto; }
+
+#layout { display: grid; grid-template-columns: 260px 1fr; min-height: 0; }
+#sidebar { background: #252526; border-right: 1px solid #111; display: flex; flex-direction: column; min-height: 0; }
+#explorer { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+#tree { overflow: auto; flex: 1; padding-bottom: 8px; }
+.section-title {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 6px 10px; font-size: 11px; font-weight: 600; letter-spacing: .5px; color: #bbb;
+}
+.node { padding: 2px 8px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; user-select: none; }
+.node:hover { background: #2a2d2e; }
+.node.active { background: #37373d; color: #fff; }
+.node .del { float: right; visibility: hidden; color: #999; }
+.node:hover .del { visibility: visible; }
+
+#git { border-top: 1px solid #111; max-height: 50%; overflow: auto; }
+#git-body { padding: 0 10px 10px; display: flex; flex-direction: column; gap: 6px; }
+#git-body .row { display: flex; gap: 6px; }
+#git-body .row button { flex: 1; }
+.muted { color: #888; font-size: 12px; word-break: break-all; }
+.change { font-size: 12px; display: flex; justify-content: space-between; gap: 6px; }
+.change .kind { color: #e2c08d; }
+
+#main { position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+#tabs { display: flex; background: #252526; overflow-x: auto; min-height: 32px; }
+.tab {
+  padding: 7px 12px; border-right: 1px solid #1e1e1e; cursor: pointer; white-space: nowrap;
+  background: #2d2d2d; color: #999; display: flex; gap: 8px; align-items: center;
+}
+.tab.active { background: #1e1e1e; color: #fff; }
+.tab .close { opacity: .6; }
+.tab .close:hover { opacity: 1; }
+.tab.dirty .close::before { content: "● "; }
+#editor { flex: 1; min-height: 0; }
+#welcome {
+  position: absolute; inset: 0; background: #1e1e1e; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 8px; text-align: center;
+}
+#welcome h1 { font-weight: 300; font-size: 30px; margin: 0; color: #eee; }
+.welcome-actions { display: flex; gap: 10px; margin-top: 12px; }
+body.has-tabs #welcome { display: none; }
+
+#panel { background: #1e1e1e; border-top: 1px solid #333; display: flex; flex-direction: column; min-height: 0; }
+#output {
+  margin: 0; padding: 4px 10px; overflow: auto; flex: 1;
+  font: 12px Menlo, Consolas, "DejaVu Sans Mono", monospace; white-space: pre-wrap; color: #ddd;
+}
+#statusbar {
+  background: #007acc; color: #fff; display: flex; justify-content: space-between; align-items: center;
+  padding: 0 10px; font-size: 12px;
+}
+#statusbar.busy { background: #c27d0e; }
+#statusbar button { background: none; border: none; color: #fff; text-decoration: underline; padding: 0 4px; font-size: 12px; }
+
+dialog { background: #252526; color: #ddd; border: 1px solid #454545; border-radius: 6px; width: 440px; }
+dialog::backdrop { background: rgba(0,0,0,.5); }
+dialog h3 { margin-top: 0; }
+#modal-fields { display: flex; flex-direction: column; gap: 10px; }
+#modal-fields label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }

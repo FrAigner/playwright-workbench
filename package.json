@@ -1,0 +1,58 @@
+{
+  "name": "playwright-workbench",
+  "productName": "Playwright Workbench",
+  "version": "0.1.0",
+  "description": "Desktop-App zum Schreiben und Ausführen von Playwright-Tests – ohne Node.js/npm-Installation.",
+  "main": "main.js",
+  "author": "Frank Aigner",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "postinstall": "node scripts/bundle-types.js",
+    "start": "electron .",
+    "test": "playwright test -c e2e/playwright.config.js",
+    "dist:mac": "electron-builder --mac",
+    "dist:win": "electron-builder --win"
+  },
+  "dependencies": {
+    "@playwright/test": "1.63.0",
+    "isomorphic-git": "1.42.5",
+    "monaco-editor": "0.57.0"
+  },
+  "devDependencies": {
+    "electron": "44.5.1",
+    "electron-builder": "26.15.3"
+  },
+  "build": {
+    "appId": "online.aigner.playwright-workbench",
+    "productName": "Playwright Workbench",
+    "directories": { "output": "dist" },
+    "files": [
+      "main.js",
+      "preload.js",
+      "src/**",
+      "renderer/**",
+      "package.json",
+      "!node_modules/monaco-editor/{esm,dev}/**",
+      "!node_modules/monaco-editor/min-maps/**"
+    ],
+    "asarUnpack": [
+      "node_modules/@playwright/**",
+      "node_modules/playwright/**",
+      "node_modules/playwright-core/**"
+    ],
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "identity": "-",
+      "target": [{ "target": "dmg", "arch": ["arm64", "x64"] }]
+    },
+    "win": {
+      "target": [{ "target": "nsis", "arch": ["x64"] }]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}
