@@ -26,15 +26,31 @@ installieren, Projekt anlegen, loslegen.
 
 ## Installation
 
-Installer gibt es unter **Actions → letzter Build → Artifacts** bzw. bei
-getaggten Versionen unter **Releases**:
+**macOS mit Homebrew (empfohlen):**
 
-- **Windows**: `Playwright Workbench Setup x.y.z.exe`. Da der Installer nicht
+```bash
+brew install --cask fraigner/tap/playwright-workbench
+```
+
+Update später mit `brew upgrade --cask playwright-workbench`.
+
+**Manuell** über die [Releases](https://github.com/FrAigner/playwright-workbench/releases):
+
+- **Windows**: `playwright-workbench-x.y.z-x64.exe`. Da der Installer nicht
   signiert ist, zeigt SmartScreen eine Warnung → „Weitere Informationen“ →
   „Trotzdem ausführen“.
-- **macOS**: `.dmg` (arm64 für Apple Silicon, x64 für Intel). Die App ist nur
-  ad-hoc signiert. Beim ersten Start: Rechtsklick → „Öffnen“. Falls macOS meldet
-  „ist beschädigt“: `xattr -cr "/Applications/Playwright Workbench.app"`.
+- **macOS**: `playwright-workbench-x.y.z-arm64.dmg` (Apple Silicon) bzw. `-x64.dmg`
+  (Intel). Die App ist nur ad-hoc signiert. Beim ersten Start: Rechtsklick →
+  „Öffnen“. Falls macOS meldet „ist beschädigt“:
+  `xattr -cr "/Applications/Playwright Workbench.app"`.
+
+## Neue Version veröffentlichen
+
+1. `version` in `package.json` erhöhen, committen.
+2. Tag setzen und pushen: `git tag -a v0.2.0 -m "…" && git push origin v0.2.0`
+   – die Pipeline baut die Installer und hängt sie ans Release.
+3. Im Repo [homebrew-tap](https://github.com/FrAigner/homebrew-tap):
+   `./update-playwright-workbench.sh 0.2.0`, committen, pushen.
 
 ## Git mit GitHub
 
