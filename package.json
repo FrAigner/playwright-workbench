@@ -27,6 +27,7 @@
     "appId": "online.aigner.playwright-workbench",
     "productName": "Playwright Workbench",
     "directories": { "output": "dist" },
+    "artifactName": "${name}-${version}-${arch}.${ext}",
     "files": [
       "main.js",
       "preload.js",
