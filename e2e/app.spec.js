@@ -40,6 +40,12 @@ test.beforeAll(async () => {
   }, project);
 });
 
+test.afterEach(async ({}, testInfo) => {
+  if (testInfo.status !== testInfo.expectedStatus && page && !page.isClosed()) {
+    console.log(`--- App-Ausgabe (${testInfo.title}) ---\n${await page.locator('#output').textContent()}`);
+  }
+});
+
 test.afterAll(async () => {
   // Skip the "unsaved changes" dialog, which would block closing after a failed test.
   await app?.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows().forEach((w) => w.destroy()));

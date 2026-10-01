@@ -5,7 +5,8 @@ const { playwrightCli, nodeModulesDir, browsersDir, unpacked } = require('./path
 let current = null;
 
 function playwrightEnv() {
-  const hook = unpacked(path.join(__dirname, 'pw-resolve-hook.js'));
+  // NODE_OPTIONS treats backslashes inside quotes as escapes, so Windows paths need forward slashes.
+  const hook = unpacked(path.join(__dirname, 'pw-resolve-hook.js')).replace(/\\/g, '/');
   return {
     ...process.env,
     ELECTRON_RUN_AS_NODE: '1',
