@@ -51,8 +51,14 @@ jobs:
           name: installer-${{ matrix.os }}
           path: ${{ matrix.artifacts }}
 
+      - name: Release Notes mit Versionen erzeugen
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: node scripts/release-notes.js
+
       - name: Release anhängen
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v3
         with:
           files: ${{ matrix.artifacts }}
+          body_path: dist/RELEASE_NOTES.md
+          generate_release_notes: true

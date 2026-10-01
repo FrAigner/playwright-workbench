@@ -259,12 +259,22 @@ async function newFile() {
 
 async function deleteFile(p) {
   if (!confirm(`${p} in den Papierkorb verschieben?`)) return;
+  try {
+    await api.call('fs:delete', p);
+  } catch (e) {
+    if (e.message !== 'TRASH_UNAVAILABLE') return status(`Löschen fehlgeschlagen: ${e.message}`);
+    if (!confirm('Papierkorb ist nicht verfügbar. Datei endgültig löschen?')) return;
+    try {
+      await api.call('fs:delete', p, true);
+    } catch (e2) {
+      return status(`Löschen fehlgeschlagen: ${e2.message}`);
+    }
+  }
   const tab = state.tabs.find((t) => t.path === p);
   if (tab) {
     tab.savedVersion = tab.model.getAlternativeVersionId();
     closeTab(p);
   }
-  await api.call('fs:delete', p);
   await refreshTree();
   refreshGit();
 }

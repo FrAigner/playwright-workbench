@@ -102,6 +102,107 @@ test('rot', async ({ page }) => {
   expect(text).not.toContain('passed');
 });
 
+const activeEditorText = () => page.evaluate(() => window.monaco.editor.getEditors()[0].getModel().getValue());
+const runFile = async (expected) => {
+  await page.getByRole('button', { name: '▶ Datei' }).click();
+  await expect(page.locator('#status-text')).toHaveText(expected, { timeout: 120_000 });
+};
+
+test('neue Datei anlegen, alle Tests ausführen, Report öffnen', async () => {
+  await page.locator('#btn-new-file').click();
+  await expect(page.getByLabel('Pfad (relativ zum Projekt)')).toHaveValue('tests/neu.spec.ts');
+  await page.getByRole('button', { name: 'Anlegen' }).click();
+  await expect(page.locator('.tab.active')).toHaveText(/neu\.spec\.ts/);
+  expect(await activeEditorText()).toContain("from '@playwright/test'");
+  await setEditor(`import { test, expect } from '@playwright/test';
+
+test('neu', async ({ page }) => {
+  await page.setContent('<button>OK</button>');
+  await expect(page.getByRole('button', { name: 'OK' })).toBeVisible();
+});
+`);
+  await page.keyboard.press(process.platform === 'darwin' ? 'Meta+S' : 'Control+S');
+  await expect(page.locator('.tab.active')).not.toHaveClass(/dirty/);
+
+  await page.getByRole('button', { name: '▶ Alle Tests' }).click();
+  await expect(page.locator('#status-text')).toHaveText('Tests fehlgeschlagen ✘', { timeout: 120_000 });
+  const text = await outputText();
+  expect(text).toContain('1 failed');
+  expect(text).toContain('2 passed');
+
+  await app.evaluate(({ shell }) => {
+    shell.openPath = async (p) => {
+      globalThis.__openedPath = p;
+      return '';
+    };
+  });
+  await page.getByRole('button', { name: 'Report öffnen' }).click();
+  await expect.poll(() => app.evaluate(() => globalThis.__openedPath)).toBe(path.join(project, 'playwright-report', 'index.html'));
+  expect(fs.readFileSync(path.join(project, 'playwright-report', 'index.html'), 'utf8')).toContain('Playwright Test Report');
+});
+
+test('Checkbox "Browser sichtbar" startet den Browser mit Fenster', async () => {
+  await setEditor(`import { test, expect } from '@playwright/test';
+
+test('läuft mit sichtbarem Browser', async ({ page, headless }) => {
+  await page.setContent('<p>sichtbar</p>');
+  expect(headless).toBe(false);
+});
+`);
+  await runFile('Tests fehlgeschlagen ✘');
+  await page.getByLabel('Browser sichtbar').check();
+  await runFile('Alle Tests bestanden ✔');
+  await page.getByLabel('Browser sichtbar').uncheck();
+});
+
+test('Aufnahme (Codegen) erzeugt einen lauffähigen Test', async () => {
+  const url = 'data:text/html,<h1>Aufnahme</h1>';
+  await page.getByRole('button', { name: '● Aufnehmen' }).click();
+  await page.getByLabel('Start-URL').fill(url);
+  await page.getByRole('button', { name: 'Aufnahme starten' }).click();
+  await expect(page.locator('#btn-stop')).toBeEnabled();
+
+  const recorded = () => fs.readdirSync(path.join(project, 'tests')).filter((f) => f.startsWith('aufnahme-'));
+  await expect.poll(() => recorded().length, { timeout: 60_000 }).toBe(1);
+  await expect
+    .poll(() => fs.readFileSync(path.join(project, 'tests', recorded()[0]), 'utf8'), { timeout: 60_000 })
+    .toContain(`page.goto('${url}')`);
+
+  // Stands in for the user closing the recorder window.
+  await page.locator('#btn-stop').click();
+  await expect(page.locator('.tab.active')).toHaveText(new RegExp(recorded()[0].replace(/\./g, '\\.')), { timeout: 30_000 });
+  expect(await activeEditorText()).toContain(`page.goto('${url}')`);
+  await runFile('Alle Tests bestanden ✔');
+});
+
+for (const browser of ['firefox', 'webkit']) {
+  test(`${browser} installieren und Test darin ausführen`, async () => {
+    test.skip(browser === 'webkit' && process.platform === 'linux', 'WebKit braucht unter Linux Systempakete');
+    test.setTimeout(900_000);
+    const status = page.locator('#browser-status');
+    if (!(await status.textContent()).includes(`${browser} ✓`)) {
+      await page.getByRole('button', { name: `${browser} installieren` }).click();
+      await expect(status).toContainText(`${browser} ✓`, { timeout: 840_000 });
+    }
+
+    const rel = `tests/${browser}.spec.ts`;
+    fs.writeFileSync(path.join(project, rel), `import { test, expect } from '@playwright/test';
+
+test.use({ browserName: '${browser}' });
+
+test('läuft in ${browser}', async ({ page, browserName }) => {
+  expect(browserName).toBe('${browser}');
+  await page.setContent('<p>Hallo</p>');
+  await expect(page.getByText('Hallo')).toBeVisible();
+});
+`);
+    await page.locator('#btn-refresh').click();
+    await page.locator('#tree .node', { hasText: `${browser}.spec.ts` }).click();
+    await expect(page.locator('.tab.active')).toHaveText(new RegExp(`${browser}\\.spec\\.ts`));
+    await runFile('Alle Tests bestanden ✔');
+  });
+}
+
 test('Git: init, commit, push und pull', async () => {
   const remote = `http://127.0.0.1:${server.address().port}/remote.git`;
 
@@ -134,4 +235,33 @@ test('Git: init, commit, push und pull', async () => {
   await page.getByRole('button', { name: '⬇ Pull' }).click();
   await expect(page.locator('#status-text')).toHaveText('Pull erfolgreich ✔');
   await expect(page.locator('#tree')).toContainText('von-kollege.spec.ts');
+});
+
+test('Ordner ohne Konfiguration öffnen, Vorlage hinzufügen, Datei löschen', async () => {
+  const empty = path.join(tmp, 'leer');
+  fs.mkdirSync(empty);
+  await app.evaluate(({ dialog }, dir) => {
+    dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [dir] });
+  }, empty);
+  await page.getByRole('button', { name: 'Ordner öffnen' }).first().click();
+  await expect(page.getByText('Dieser Ordner enthält noch keine')).toBeVisible();
+  await page.getByRole('button', { name: 'Playwright-Vorlage hinzufügen' }).click();
+  await expect(page.locator('.tab.active')).toHaveText(/example\.spec\.ts/);
+  expect(fs.existsSync(path.join(empty, 'playwright.config.ts'))).toBe(true);
+
+  // Accepts "in den Papierkorb?" and, where no trash exists, "endgültig löschen?".
+  const dialogs = [];
+  const accept = (d) => {
+    dialogs.push(d.message());
+    d.accept();
+  };
+  page.on('dialog', accept);
+  const row = page.locator('#tree .node', { hasText: 'example.spec.ts' });
+  await row.hover();
+  await row.locator('.del').click();
+  await expect(row).toHaveCount(0);
+  await expect(page.locator('#tabs .tab')).toHaveCount(0);
+  page.off('dialog', accept);
+  expect(fs.existsSync(path.join(empty, 'tests', 'example.spec.ts'))).toBe(false);
+  if (process.platform !== 'linux') expect(dialogs).toHaveLength(1);
 });

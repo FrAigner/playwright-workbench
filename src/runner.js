@@ -31,7 +31,10 @@ function runCli(args, cwd, onOutput) {
 }
 
 function stop() {
-  if (current) current.kill();
+  if (!current) return;
+  // On Windows, killing the parent leaves the launched browsers running.
+  if (process.platform === 'win32') spawn('taskkill', ['/pid', String(current.pid), '/T', '/F']);
+  else current.kill();
 }
 
 function isRunning() {

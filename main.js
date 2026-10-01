@@ -106,10 +106,18 @@ function registerIpc() {
       : '';
     fs.writeFileSync(abs, content);
   });
-  handle('fs:delete', async (rel) => {
+  handle('fs:delete', async (rel, permanent) => {
     const abs = resolveInRoot(rel);
     if (abs === root) throw new Error('Projektordner kann nicht gelöscht werden.');
-    await shell.trashItem(abs);
+    if (permanent) {
+      fs.rmSync(abs, { recursive: true });
+      return;
+    }
+    try {
+      await shell.trashItem(abs);
+    } catch {
+      throw new Error('TRASH_UNAVAILABLE');
+    }
   });
 
   handle('pw:types', () => JSON.parse(fs.readFileSync(path.join(__dirname, 'src', 'playwright-types.json'), 'utf8')));
