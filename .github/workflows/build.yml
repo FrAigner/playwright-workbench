@@ -19,9 +19,11 @@ jobs:
           - os: macos-latest
             dist: dist:mac
             artifacts: dist/*.dmg
+            exe: dist/mac-arm64/Playwright Workbench.app/Contents/MacOS/Playwright Workbench
           - os: windows-latest
             dist: dist:win
             artifacts: dist/*.exe
+            exe: dist/win-unpacked/Playwright Workbench.exe
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
@@ -36,6 +38,13 @@ jobs:
 
       - name: Installer bauen
         run: npm run ${{ matrix.dist }} -- --publish never
+
+      - name: End-to-End-Tests gegen gepackte App
+        shell: bash
+        run: |
+          export PW_WORKBENCH_EXE="$GITHUB_WORKSPACE/${{ matrix.exe }}"
+          test -f "$PW_WORKBENCH_EXE"
+          npm test
 
       - uses: actions/upload-artifact@v7
         with:
