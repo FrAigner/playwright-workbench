@@ -41,4 +41,4 @@ function installedBrowsers() {
   return Object.keys(REQUIRED).filter((b) => REQUIRED[b].every(isInstalled));
 }
 
-module.exports = { playwrightCli, nodeModulesDir, browsersDir, installedBrowsers };
+module.exports = { playwrightCli, nodeModulesDir, browsersDir, installedBrowsers, unpacked };

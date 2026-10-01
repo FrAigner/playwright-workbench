@@ -265,3 +265,43 @@ test('Ordner ohne Konfiguration öffnen, Vorlage hinzufügen, Datei löschen', a
   expect(fs.existsSync(path.join(empty, 'tests', 'example.spec.ts'))).toBe(false);
   if (process.platform !== 'linux') expect(dialogs).toHaveLength(1);
 });
+
+const greenSpec = `import { test, expect } from '@playwright/test';
+
+test('grün', async ({ page }) => {
+  await page.setContent('<p>ok</p>');
+  await expect(page.getByText('ok')).toBeVisible();
+});
+`;
+
+async function openFolder(dir) {
+  await app.evaluate(({ dialog }, d) => {
+    dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [d] });
+  }, dir);
+  await page.getByRole('button', { name: 'Ordner öffnen' }).first().click();
+}
+
+test('fremde Playwright-Kopie in übergeordnetem node_modules stört nicht', async () => {
+  const parent = path.join(tmp, 'mit-node-modules');
+  const proj = path.join(parent, 'projekt');
+  for (const pkg of ['@playwright/test', 'playwright', 'playwright-core']) {
+    fs.cpSync(path.join(appDir, 'node_modules', pkg), path.join(parent, 'node_modules', pkg), { recursive: true });
+  }
+  fs.mkdirSync(proj, { recursive: true });
+  await openFolder(proj);
+  await page.getByRole('button', { name: 'Playwright-Vorlage hinzufügen' }).click();
+  await expect(page.locator('.tab.active')).toHaveText(/example\.spec\.ts/);
+  await setEditor(greenSpec);
+  await runFile('Alle Tests bestanden ✔');
+});
+
+test('ES-Modul-Projekt ("type": "module") läuft', async () => {
+  const proj = path.join(tmp, 'esm');
+  fs.mkdirSync(path.join(proj, 'tests'), { recursive: true });
+  fs.writeFileSync(path.join(proj, 'package.json'), '{ "type": "module" }\n');
+  fs.writeFileSync(path.join(proj, 'playwright.config.ts'), "import { defineConfig } from '@playwright/test';\nexport default defineConfig({ testDir: './tests' });\n");
+  fs.writeFileSync(path.join(proj, 'tests', 'esm.spec.ts'), greenSpec);
+  await openFolder(proj);
+  await expect(page.locator('.tab.active')).toHaveText(/esm\.spec\.ts/);
+  await runFile('Alle Tests bestanden ✔');
+});

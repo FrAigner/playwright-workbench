@@ -1,12 +1,16 @@
+const path = require('path');
 const { spawn } = require('child_process');
-const { playwrightCli, nodeModulesDir, browsersDir } = require('./paths');
+const { playwrightCli, nodeModulesDir, browsersDir, unpacked } = require('./paths');
 
 let current = null;
 
 function playwrightEnv() {
+  const hook = unpacked(path.join(__dirname, 'pw-resolve-hook.js'));
   return {
     ...process.env,
     ELECTRON_RUN_AS_NODE: '1',
+    NODE_OPTIONS: `${process.env.NODE_OPTIONS || ''} --require "${hook}"`.trim(),
+    PW_WORKBENCH_NODE_MODULES: nodeModulesDir(),
     NODE_PATH: nodeModulesDir(),
     PLAYWRIGHT_BROWSERS_PATH: browsersDir(),
     FORCE_COLOR: '0',

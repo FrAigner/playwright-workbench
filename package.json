@@ -1,7 +1,7 @@
 {
   "name": "playwright-workbench",
   "productName": "Playwright Workbench",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Desktop-App zum Schreiben und Ausführen von Playwright-Tests – ohne Node.js/npm-Installation.",
   "main": "main.js",
   "author": "Frank Aigner",
@@ -26,7 +26,9 @@
   "build": {
     "appId": "online.aigner.playwright-workbench",
     "productName": "Playwright Workbench",
-    "directories": { "output": "dist" },
+    "directories": {
+      "output": "dist"
+    },
     "artifactName": "${name}-${version}-${arch}.${ext}",
     "files": [
       "main.js",
@@ -38,6 +40,7 @@
       "!node_modules/monaco-editor/min-maps/**"
     ],
     "asarUnpack": [
+      "src/pw-resolve-hook.js",
       "node_modules/@playwright/**",
       "node_modules/playwright/**",
       "node_modules/playwright-core/**"
@@ -45,10 +48,25 @@
     "mac": {
       "category": "public.app-category.developer-tools",
       "identity": "-",
-      "target": [{ "target": "dmg", "arch": ["arm64", "x64"] }]
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        }
+      ]
     },
     "win": {
-      "target": [{ "target": "nsis", "arch": ["x64"] }]
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
     },
     "nsis": {
       "oneClick": false,
